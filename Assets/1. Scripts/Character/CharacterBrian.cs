@@ -81,6 +81,7 @@ namespace Extras.Character
 
         private void Update()
         {
+            CalculateActionPriority();
 
             if (delay)
             {
@@ -90,17 +91,16 @@ namespace Extras.Character
             //Talking
             if (currentActionType == ActionType.Conversation)
             {
-                
+
                 StartCoroutine(InConversation());
                 return;
             }
 
             if (currentActionType == ActionType.Social)
             {
-                
+
                 if (WithinDistance(otherCharacter.transform.position, converstationDistance))
                 {
-                    needs.SetNeed(ObjectType.Character, 100f);
                     BeginConversation();
                     return;
                 }
@@ -117,7 +117,7 @@ namespace Extras.Character
                 return;
             }
 
-            CalculateActionPriority();
+
 
             //Needs
 
@@ -134,7 +134,7 @@ namespace Extras.Character
 
             if (recommendedActionType == ActionType.Needs)
             {
-                if(needs.NeedsProcessing())
+                if (needs.NeedsProcessing())
                 {
                     currentThingOfInterest = needs.GetCurrentThingOfInterest();
                     currentActionType = ActionType.Needs;
@@ -166,7 +166,7 @@ namespace Extras.Character
                 motion.SetDestination(culturalThingOfInterest.GetGoToPoint().position);
                 if (WithinDistance(culturalThingOfInterest.GetGoToPoint().position, 1f))
                 {
-                    StartCoroutine(Delay(culture.EnjoyTheCulture()+ 3f));
+                    StartCoroutine(Delay(culture.EnjoyTheCulture() + 3f));
                     ResetAll();
                 }
                 return;
@@ -222,7 +222,7 @@ namespace Extras.Character
                 motion.SetDestination(searching.GetMyHome().GetSleepPosition().position);
                 if (WithinDistance(searching.GetMyHome().GetSleepPosition().position, 0.5f))
                 {
-                    
+
                     needs.SetNeed(ObjectType.Home, 100f);
                     StartCoroutine(culture.Sleep(20f));
                     StartCoroutine(Delay(23f));
@@ -237,7 +237,8 @@ namespace Extras.Character
         #region Talking
 
         private void BeginConversation()
-        { 
+        {
+            needs.SetNeed(ObjectType.Character, 100f);
             motion.CancelDestination();
             transform.LookAt(otherCharacter.transform.position);
             currentActionType = ActionType.Conversation;
@@ -249,7 +250,7 @@ namespace Extras.Character
         {
             otherCharacter = eyeSight.Look().gameObject.GetComponent<CharacterBrian>();
             if (otherCharacter.WantsToTalk())
-            {   
+            {
                 currentActionType = ActionType.Social;
                 motion.CancelDestination();
                 otherCharacter.SetOtherCharacter(this.gameObject.GetComponent<CharacterBrian>());
@@ -270,7 +271,7 @@ namespace Extras.Character
 
         public bool WantsToTalk()
         {
-            return socialPri > 60f && currentActionType != ActionType.Social &&  currentActionType != ActionType.Conversation;
+            return socialPri > 60f && currentActionType != ActionType.Social && currentActionType != ActionType.Conversation;
         }
 
         public void SetTalking(ActionType actionType)
@@ -284,51 +285,6 @@ namespace Extras.Character
         }
 
         #endregion
-
-        #region Culture
-
-        // private void EnjoyTheCulture(float duration)
-        // {
-        //     culture.ResetCulture();
-        //     if (culturalThingOfInterest.GetCultureType() == CultureType.Art)
-        //     {
-        //         transform.LookAt(culturalThingOfInterest.transform.position);
-        //         animator.SetTrigger("yes");
-        //         duration = 3f;
-        //         StartCoroutine(Delay(duration));
-        //     }
-        //     if (culturalThingOfInterest.GetCultureType() == CultureType.Sit)
-        //     {
-        //         StartCoroutine(Sit(10f));
-        //     }
-        //     if (culturalThingOfInterest.GetCultureType() == CultureType.Laydown)
-        //     {
-        //         StartCoroutine(Sleep(10f));
-        //     }
-        //     culturalThingOfInterest = null;
-        //     ResetAll();
-        // }
-
-        // private IEnumerator Sleep(float duration)
-        // {
-        //     StartCoroutine(Delay(duration + 3f));
-        //     transform.LookAt(Camera.main.transform);
-        //     animator.SetBool("sleep", true);
-        //     yield return new WaitForSeconds(duration);
-        //     animator.SetBool("sleep", false);
-        // }
-
-        // private IEnumerator Sit(float duration)
-        // {
-        //     StartCoroutine(Delay(duration + 3f));
-        //     transform.LookAt(Camera.main.transform);
-        //     animator.SetBool("sitting", true);
-        //     yield return new WaitForSeconds(duration);
-        //     animator.SetBool("sitting", false);
-        // }
-
-        #endregion
-
 
         private void HandleWeatherUpdated()
         {
