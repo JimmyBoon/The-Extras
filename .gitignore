@@ -1,0 +1,34 @@
+/.DS_Store
+/.vscode
+/AI Demonstration project.sln
+/Assembly-CSharp-Editor.csproj
+/Assembly-CSharp.csproj
+/Cinemachine.csproj
+/Library
+/Logs
+/Packages
+/ProjectSettings
+/Temp
+/Unity.CollabProxy.Editor.csproj
+/Unity.Rider.Editor.csproj
+/Unity.TextMeshPro.Editor.csproj
+/Unity.TextMeshPro.csproj
+/Unity.Timeline.Editor.csproj
+/Unity.Timeline.csproj
+/Unity.VSCode.Editor.csproj
+/Unity.VisualStudio.Editor.csproj
+/UnityEditor.TestRunner.csproj
+/UnityEditor.UI.csproj
+/UnityEngine.TestRunner.csproj
+/UnityEngine.UI.csproj
+/UserSettings
+/com.unity.cinemachine.editor.csproj
+/obj
+/Assets/2. Prefab
+/Assets/3. Scenes
+/Assets/4. Packs
+/Assets/5. Animation
+/Assets/Materials
+/Assets/Models
+/Assets/TextMesh Pro
+/Assets/Textures and Sprites
