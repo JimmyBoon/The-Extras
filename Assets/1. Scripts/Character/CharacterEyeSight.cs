@@ -50,11 +50,11 @@ namespace Extras.Character
         private bool InSight(GameObject target)
         {
             if (target == null) { return false; }
-            RaycastHit hit;
-            if (Vector3.Distance(target.transform.position, transform.position) > seeingRange) { return false; }
-            bool canSee = Physics.Linecast(eyes.transform.position, target.transform.position, out hit) && InSightAngle(target) && hit.transform.gameObject.name == target.gameObject.name;
 
-            return canSee;
+            RaycastHit hit;
+            if ((target.transform.position - eyes.transform.position).sqrMagnitude >= seeingRange * seeingRange || !InSightAngle(target)) { return false; }
+
+            return Physics.Linecast(eyes.transform.position, target.transform.position, out hit) && hit.transform.gameObject.name == target.gameObject.name;
         }
     }
 }
