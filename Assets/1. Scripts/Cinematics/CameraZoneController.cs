@@ -33,5 +33,10 @@ namespace Extras.Cinematics
 
             }
         }
+
+        public void SetTargetToFollow(GameObject target)
+        {
+            targetToFollow = target;
+        }
     }
 }
