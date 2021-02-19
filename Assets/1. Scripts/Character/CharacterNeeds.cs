@@ -28,6 +28,19 @@ namespace Extras.Character
             motion = GetComponent<CharacterMotion>();
             animator = GetComponent<Animator>();
             searching = GetComponent<CharacterSearching>();
+
+            food = UnityEngine.Random.Range(50f, 100f);
+            water = UnityEngine.Random.Range(50f, 100f);
+            social = UnityEngine.Random.Range(50f, 100f);
+            rest = UnityEngine.Random.Range(50f, 100f);
+
+
+            foodConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
+            waterConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
+            socialConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
+            restConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
+            
+
         }
 
         void Update()

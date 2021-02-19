@@ -13,6 +13,10 @@ namespace Extras.Cinematics
         [SerializeField] CinemachineStateDrivenCamera stateDrivenCamera;
         [SerializeField] bool panoramicCameraOn = false;
         [SerializeField] GameObject panoramicCamera;
+        [SerializeField] bool autoChange = true;
+        [SerializeField] float changeTime = 15f;
+        float timeLapse = 0f;
+
         Animator animator;
 
         int characterToFollow = 0;
@@ -28,8 +32,20 @@ namespace Extras.Cinematics
         private void Start()
         {
             SetCharacterToFollow();
-
         }
+
+        private void Update()
+        {
+            timeLapse += Time.deltaTime;
+
+            if(autoChange && timeLapse > changeTime)
+            {
+                timeLapse = 0f;
+                ChangeCharacter();
+            }
+        }
+
+
 
         private void SetCharacterToFollow()
         {

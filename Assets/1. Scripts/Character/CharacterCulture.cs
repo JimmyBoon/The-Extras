@@ -21,6 +21,9 @@ namespace Extras.Character
         private void Awake()
         {
             animator = GetComponent<Animator>();
+
+            culture = UnityEngine.Random.Range(50f, 100f);
+            cultureConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
             
         }
 
