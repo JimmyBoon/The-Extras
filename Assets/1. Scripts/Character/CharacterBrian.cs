@@ -14,6 +14,7 @@ namespace Extras.Character
 
         [SerializeField] ActionType recommendedActionType = ActionType.None;
         [SerializeField] ActionType currentActionType = ActionType.None;
+        
         [SerializeField] float foodPri;
         [SerializeField] float waterPri;
         [SerializeField] float socialPri;
@@ -42,6 +43,7 @@ namespace Extras.Character
         CharacterMotion motion;
         CharacterNeeds needs;
         CharacterSearching searching;
+        CharacterTalking talking;
         Weather weather;
         Animator animator;
 
@@ -54,15 +56,18 @@ namespace Extras.Character
             motion = GetComponent<CharacterMotion>();
             needs = GetComponent<CharacterNeeds>();
             searching = GetComponent<CharacterSearching>();
+            talking = GetComponent<CharacterTalking>();
             weather = FindObjectOfType<Weather>();
             animator = GetComponent<Animator>();
 
             weather.WeatherUpdated += HandleWeatherUpdated;
+            talking.TalkingStatusUpdated += HandleTalkingStatusUpdated;
         }
 
         private void OnDestroy()
         {
             weather.WeatherUpdated -= HandleWeatherUpdated;
+            talking.TalkingStatusUpdated -= HandleTalkingStatusUpdated;
         }
 
         private void Start()
@@ -91,29 +96,28 @@ namespace Extras.Character
             //Talking
             if (currentActionType == ActionType.Conversation)
             {
-
-                StartCoroutine(InConversation());
+                StartCoroutine(talking.InConversation());
+                StartCoroutine(Delay(talking.GetConversationLength()));
+                ResetAll();
                 return;
             }
 
             if (currentActionType == ActionType.Social)
             {
 
-                if (WithinDistance(otherCharacter.transform.position, converstationDistance))
+                if (WithinDistance(talking.GetOtherCharacter().transform.position, converstationDistance))
                 {
-                    BeginConversation();
+                    talking.BeginConversation();
                     return;
                 }
-                motion.SetDestination(otherCharacter.GetComponent<ObjectOfInterest>().GetGoToPoint().position);
+                motion.SetDestination(talking.GetOtherCharacter().GetComponent<ObjectOfInterest>().GetGoToPoint().position);
                 return;
             }
 
-            if (eyeSight.Look() != null
-            && eyeSight.Look().GetObjectType() == ObjectType.Character
-            && eyeSight.Look().gameObject != this.gameObject
-            && socialPri > 50f)
+            if (talking.EvaluateTalking())
             {
-                InitiateConversation();
+                currentActionType = ActionType.Social;
+                talking.InitiateConversation();
                 return;
             }
 
@@ -222,7 +226,6 @@ namespace Extras.Character
                 motion.SetDestination(searching.GetMyHome().GetSleepPosition().position);
                 if (WithinDistance(searching.GetMyHome().GetSleepPosition().position, 0.5f))
                 {
-
                     needs.SetNeed(ObjectType.Home, 100f);
                     StartCoroutine(culture.Sleep(20f));
                     StartCoroutine(Delay(23f));
@@ -233,58 +236,6 @@ namespace Extras.Character
             motion.SetDestination(searching.SearchNewPoint());
             return;
         }
-
-        #region Talking
-
-        private void BeginConversation()
-        {
-            needs.SetNeed(ObjectType.Character, 100f);
-            motion.CancelDestination();
-            transform.LookAt(otherCharacter.transform.position);
-            currentActionType = ActionType.Conversation;
-            animator.SetBool("talking", true);
-            animator.SetFloat("talkValue", UnityEngine.Random.Range(0.0f, 1f));
-        }
-
-        private void InitiateConversation()
-        {
-            otherCharacter = eyeSight.Look().gameObject.GetComponent<CharacterBrian>();
-            if (otherCharacter.WantsToTalk())
-            {
-                currentActionType = ActionType.Social;
-                motion.CancelDestination();
-                otherCharacter.SetOtherCharacter(this.gameObject.GetComponent<CharacterBrian>());
-                otherCharacter.SetTalking(ActionType.Social);
-                otherCharacter.motion.CancelDestination();
-                otherCharacter.transform.LookAt(transform.position);
-            }
-        }
-
-        private IEnumerator InConversation()
-        {
-            delay = true;
-            yield return new WaitForSeconds(8f);
-            animator.SetBool("talking", false);
-            delay = false;
-            ResetAll();
-        }
-
-        public bool WantsToTalk()
-        {
-            return socialPri > 60f && currentActionType != ActionType.Social && currentActionType != ActionType.Conversation;
-        }
-
-        public void SetTalking(ActionType actionType)
-        {
-            this.currentActionType = actionType;
-        }
-
-        public void SetOtherCharacter(CharacterBrian character)
-        {
-            otherCharacter = character;
-        }
-
-        #endregion
 
         private void HandleWeatherUpdated()
         {
@@ -299,13 +250,19 @@ namespace Extras.Character
             {
                 itsRaining = false;
                 motion.SetWalk();
+                ResetAll();
             }
         }
 
-        private float CheckDistance(Vector3 targetDestination)
+        private void HandleTalkingStatusUpdated(ActionType action)
         {
-            return Vector3.Distance(transform.position, targetDestination);
+            currentActionType = action;
         }
+
+        // private float CheckDistance(Vector3 targetDestination)
+        // {
+        //     return Vector3.Distance(transform.position, targetDestination);
+        // }
 
         private bool WithinDistance(Vector3 targetDestination, float distance)
         {

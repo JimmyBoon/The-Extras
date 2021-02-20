@@ -32,7 +32,7 @@ namespace Extras.Character
 
         Dictionary<ObjectOfInterest, ObjectType> thingsSeen = new Dictionary<ObjectOfInterest, ObjectType>();
 
-        Home myHome = null;
+        [SerializeField] Home myHome = null;
 
         private void Awake()
         {
@@ -133,6 +133,7 @@ namespace Extras.Character
             if (checkPath == false)
             {
                 Debug.Log("NavMesh path is false");
+                return false;
             }
 
             foreach (Vector3 place in placesSearched)
