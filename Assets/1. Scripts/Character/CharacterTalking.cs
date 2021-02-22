@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Extras.Objects;
+using Extras.Cinematics;
+using Extras.UI;
 
 
 namespace Extras.Character
@@ -13,6 +15,8 @@ namespace Extras.Character
         [SerializeField] float conversationLength = 8f;
         [SerializeField] bool social = false;
         [SerializeField] bool inConversation = false;
+        [SerializeField] bool conversationInitiator = false;
+        [SerializeField] bool followed = false;
 
         CharacterTalking otherCharacter = null;
         
@@ -20,6 +24,8 @@ namespace Extras.Character
         CharacterMotion motion;
         CharacterEyeSight eyeSight;
         Animator animator;
+        FollowChanger followChanger;
+        TalkingUI talkingUI;
 
         public event Action<ActionType> TalkingStatusUpdated;
 
@@ -28,7 +34,9 @@ namespace Extras.Character
             needs = GetComponent<CharacterNeeds>();
             motion = GetComponent<CharacterMotion>();
             eyeSight = GetComponent<CharacterEyeSight>();
-            animator = GetComponent<Animator>();            
+            animator = GetComponent<Animator>(); 
+            followChanger = FindObjectOfType<FollowChanger>();  
+            talkingUI = GetComponentInChildren<TalkingUI>();         
         }
 
         public float GetConversationLength()
@@ -65,19 +73,28 @@ namespace Extras.Character
         {
             if(otherCharacter == null) { return; }
 
-                social = true;
-                TalkingStatusUpdated?.Invoke(ActionType.Social);
+            social = true;
+            conversationInitiator = true;
 
-                motion.CancelDestination();
+            TalkingStatusUpdated?.Invoke(ActionType.Social);
 
-                otherCharacter.motion.CancelDestination();
-                otherCharacter.SetOtherCharacter(this.gameObject.GetComponent<CharacterTalking>());
-                otherCharacter.SetTalking(ActionType.Social);
-                
-                otherCharacter.transform.LookAt(transform.position); //todo check if this is required, might result in stuttering
+            motion.CancelDestination();
+
+            otherCharacter.motion.CancelDestination();
+            otherCharacter.SetOtherCharacter(this.gameObject.GetComponent<CharacterTalking>());
+            otherCharacter.SetTalking(ActionType.Social);
+
+            otherCharacter.SetTalkingDuration(this.conversationLength);
+
+            if(followChanger.GetCharacterBeginFollowed() == gameObject || followChanger.GetCharacterBeginFollowed() == otherCharacter.gameObject)
+            {
+                followed = true;
+                otherCharacter.SetOtherCharacterFollowed(true);
+            }
+
+            talkingUI.LaunchText("Hello There");
 
         }
-
 
         public void BeginConversation()
         {
@@ -91,15 +108,21 @@ namespace Extras.Character
 
             animator.SetBool("talking", true);
             animator.SetFloat("talkValue", UnityEngine.Random.Range(0.0f, 1f));
+
         }
-
-
 
         public IEnumerator InConversation()
         {
+            yield return new WaitForSeconds(1f);
+
+            if(followed)
+            {
+                SetupUI();
+            }
             yield return new WaitForSeconds(conversationLength);
             animator.SetBool("talking", false);
             inConversation = false;
+            followed = false;
             otherCharacter = null;
 
         }
@@ -118,6 +141,24 @@ namespace Extras.Character
         public void SetOtherCharacter(CharacterTalking character)
         {
             otherCharacter = character;
+        }
+
+        public void SetOtherCharacterFollowed(bool beginFollowed)
+        {
+            followed = beginFollowed;
+        }
+
+        public void SetTalkingDuration(float duration)
+        {
+            conversationLength = duration;
+        }
+
+        private void SetupUI()
+        {
+            Debug.Log("SetupUI triggered");
+            Vector3 myScreenPos = Camera.main.WorldToScreenPoint(transform.position);
+            //Vector3 otherCharacterScreenPos = Camera.main.WorldToScreenPoint(otherCharacter.transform.position);
+            talkingUI.LaunchText($"My Name is {gameObject.name}");
         }
     }
 }

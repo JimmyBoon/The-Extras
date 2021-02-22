@@ -18,6 +18,7 @@ namespace Extras.Cinematics
         float timeLapse = 0f;
 
         Animator animator;
+        GameObject characterBeginFollowed;
 
         int characterToFollow = 0;
 
@@ -89,7 +90,13 @@ namespace Extras.Cinematics
             {
                 panoramicCamera.SetActive(false);
             }
-
         }
+
+        public GameObject GetCharacterBeginFollowed()
+        {
+            return characters[characterToFollow].gameObject;
+        }
+
+    
     }
 }

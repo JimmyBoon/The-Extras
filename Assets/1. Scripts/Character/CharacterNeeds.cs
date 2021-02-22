@@ -16,6 +16,7 @@ namespace Extras.Character
         [SerializeField] float waterConsumptionRate = 1f;
         [SerializeField] float socialConsumptionRate = 0.25f;
         [SerializeField] float restConsumptionRate = 0.1f;
+        [SerializeField] bool randomValues = true;
 
         ObjectOfInterest currentThingOfInterest;
 
@@ -29,6 +30,8 @@ namespace Extras.Character
             animator = GetComponent<Animator>();
             searching = GetComponent<CharacterSearching>();
 
+            if(randomValues)
+            {
             food = UnityEngine.Random.Range(50f, 100f);
             water = UnityEngine.Random.Range(50f, 100f);
             social = UnityEngine.Random.Range(50f, 100f);
@@ -39,7 +42,7 @@ namespace Extras.Character
             waterConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
             socialConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
             restConsumptionRate = UnityEngine.Random.Range(0.2f, 0.5f);
-            
+            }
 
         }
 
