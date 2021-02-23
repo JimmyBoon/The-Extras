@@ -17,15 +17,21 @@ namespace Extras.Character
         [SerializeField] bool inConversation = false;
         [SerializeField] bool conversationInitiator = false;
         [SerializeField] bool followed = false;
+        //[SerializeField] List<string> conversationList = new List<string>();
+        [SerializeField] StandardQuestions questions;
+        [SerializeField] Answers answers;
+
 
         CharacterTalking otherCharacter = null;
-        
+
         CharacterNeeds needs;
         CharacterMotion motion;
         CharacterEyeSight eyeSight;
         Animator animator;
         FollowChanger followChanger;
         TalkingUI talkingUI;
+
+        int conversationCounter = 0;
 
         public event Action<ActionType> TalkingStatusUpdated;
 
@@ -34,9 +40,9 @@ namespace Extras.Character
             needs = GetComponent<CharacterNeeds>();
             motion = GetComponent<CharacterMotion>();
             eyeSight = GetComponent<CharacterEyeSight>();
-            animator = GetComponent<Animator>(); 
-            followChanger = FindObjectOfType<FollowChanger>();  
-            talkingUI = GetComponentInChildren<TalkingUI>();         
+            animator = GetComponent<Animator>();
+            followChanger = FindObjectOfType<FollowChanger>();
+            talkingUI = GetComponentInChildren<TalkingUI>();
         }
 
         public float GetConversationLength()
@@ -53,8 +59,8 @@ namespace Extras.Character
         {
             ObjectOfInterest possibleCharacter = eyeSight.Look();
 
-            if (possibleCharacter != null && possibleCharacter.GetObjectType() == ObjectType.Character 
-            && possibleCharacter.gameObject != this.gameObject 
+            if (possibleCharacter != null && possibleCharacter.GetObjectType() == ObjectType.Character
+            && possibleCharacter.gameObject != this.gameObject
             && needs.GetSocialPriority() > wantsToTalkTriggerValue
             && possibleCharacter.GetComponent<CharacterTalking>().WantsToTalk())
             {
@@ -66,15 +72,16 @@ namespace Extras.Character
                 otherCharacter = null;
                 return false;
             }
-            
+
         }
 
         public void InitiateConversation()
         {
-            if(otherCharacter == null) { return; }
+            if (otherCharacter == null) { return; }
 
             social = true;
             conversationInitiator = true;
+            
 
             TalkingStatusUpdated?.Invoke(ActionType.Social);
 
@@ -84,14 +91,13 @@ namespace Extras.Character
             otherCharacter.SetOtherCharacter(this.gameObject.GetComponent<CharacterTalking>());
             otherCharacter.SetTalking(ActionType.Social);
 
-            otherCharacter.SetTalkingDuration(this.conversationLength);
-
-            if(followChanger.GetCharacterBeginFollowed() == gameObject || followChanger.GetCharacterBeginFollowed() == otherCharacter.gameObject)
+            if (followChanger.GetCharacterBeginFollowed() == gameObject || followChanger.GetCharacterBeginFollowed() == otherCharacter.gameObject)
             {
                 followed = true;
                 otherCharacter.SetOtherCharacterFollowed(true);
+                conversationLength = questions.GetStandardQuestions().Count * 4f + 1f;
             }
-
+            otherCharacter.SetTalkingDuration(this.conversationLength);
             talkingUI.LaunchText("Hello There");
 
         }
@@ -115,16 +121,35 @@ namespace Extras.Character
         {
             yield return new WaitForSeconds(1f);
 
-            if(followed)
+            if (followed && conversationInitiator)
             {
-                SetupUI();
+                while (conversationCounter < questions.GetStandardQuestions().Count)
+                {  
+                    talkingUI.LaunchText(questions.GetStandardQuestions()[conversationCounter]);
+                    
+                    yield return new WaitForSeconds(2f);
+
+                    otherCharacter.talkingUI.LaunchText(otherCharacter.GetAnswers().GetAnswers()[conversationCounter]);
+                    conversationCounter++;
+
+                    yield return new WaitForSeconds(2f); 
+                }
+                EndConversation();
             }
-            yield return new WaitForSeconds(conversationLength);
+            else if (followed == false || conversationInitiator == false)
+            {
+                yield return new WaitForSeconds(conversationLength);
+                EndConversation();
+            }
+        }
+
+        private void EndConversation()
+        {
             animator.SetBool("talking", false);
             inConversation = false;
             followed = false;
             otherCharacter = null;
-
+            conversationCounter = 0;
         }
 
         public bool WantsToTalk()
@@ -153,12 +178,9 @@ namespace Extras.Character
             conversationLength = duration;
         }
 
-        private void SetupUI()
+        public Answers GetAnswers()
         {
-            Debug.Log("SetupUI triggered");
-            Vector3 myScreenPos = Camera.main.WorldToScreenPoint(transform.position);
-            //Vector3 otherCharacterScreenPos = Camera.main.WorldToScreenPoint(otherCharacter.transform.position);
-            talkingUI.LaunchText($"My Name is {gameObject.name}");
+            return answers;
         }
     }
 }

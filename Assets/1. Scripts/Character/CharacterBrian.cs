@@ -97,7 +97,7 @@ namespace Extras.Character
             if (currentActionType == ActionType.Conversation)
             {
                 StartCoroutine(talking.InConversation());
-                StartCoroutine(Delay(talking.GetConversationLength()));
+                StartCoroutine(Delay(talking.GetConversationLength()+2f));
                 ResetAll();
                 return;
             }
@@ -258,11 +258,6 @@ namespace Extras.Character
         {
             currentActionType = action;
         }
-
-        // private float CheckDistance(Vector3 targetDestination)
-        // {
-        //     return Vector3.Distance(transform.position, targetDestination);
-        // }
 
         private bool WithinDistance(Vector3 targetDestination, float distance)
         {
