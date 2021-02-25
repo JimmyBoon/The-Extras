@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: StandardQuestions
   m_EditorClassIdentifier: 
   standardQuestions:
-  - Whats your name?
-  - How are you?
-  - What are you doing?
-  - Where are you from?
   - How old are you?
+  - Whats your name?
+  - Where are you from?
+  - What do you do?
+  - Whats your story?

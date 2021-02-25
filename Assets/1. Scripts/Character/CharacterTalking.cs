@@ -5,6 +5,7 @@ using UnityEngine;
 using Extras.Objects;
 using Extras.Cinematics;
 using Extras.UI;
+using Extras.Character.Conversations;
 
 
 namespace Extras.Character
@@ -30,6 +31,7 @@ namespace Extras.Character
         Animator animator;
         FollowChanger followChanger;
         TalkingUI talkingUI;
+        ConversationBuilder conversationBuilder;
 
         int conversationCounter = 0;
 
@@ -43,6 +45,7 @@ namespace Extras.Character
             animator = GetComponent<Animator>();
             followChanger = FindObjectOfType<FollowChanger>();
             talkingUI = GetComponentInChildren<TalkingUI>();
+            conversationBuilder = GetComponent<ConversationBuilder>();
         }
 
         public float GetConversationLength()
@@ -93,9 +96,10 @@ namespace Extras.Character
 
             if (followChanger.GetCharacterBeginFollowed() == gameObject || followChanger.GetCharacterBeginFollowed() == otherCharacter.gameObject)
             {
+                conversationBuilder.BuildConversation(this, otherCharacter);
                 followed = true;
                 otherCharacter.SetOtherCharacterFollowed(true);
-                conversationLength = questions.GetStandardQuestions().Count * 4f + 1f;
+                conversationLength = conversationBuilder.GetConversationLength();
             }
             otherCharacter.SetTalkingDuration(this.conversationLength);
             talkingUI.LaunchText("Hello There");
@@ -123,17 +127,26 @@ namespace Extras.Character
 
             if (followed && conversationInitiator)
             {
-                while (conversationCounter < questions.GetStandardQuestions().Count)
-                {  
-                    talkingUI.LaunchText(questions.GetStandardQuestions()[conversationCounter]);
-                    
+                List<ConversationLine> conversation = conversationBuilder.GetConversationLines();
+
+                foreach (ConversationLine line in conversation)
+                {
+                    if(line.characterTalking.gameObject == this.gameObject)
+                    {
+                        talkingUI.LaunchText(line.text);
+                    }
+                    else if (line.characterTalking.gameObject == otherCharacter.gameObject)
+                    {
+                        otherCharacter.talkingUI.LaunchText(line.text);
+                    }
+                    else
+                    {
+                        Debug.Log("Oops I don't know who is talking");
+                    }
                     yield return new WaitForSeconds(2f);
 
-                    otherCharacter.talkingUI.LaunchText(otherCharacter.GetAnswers().GetAnswers()[conversationCounter]);
-                    conversationCounter++;
-
-                    yield return new WaitForSeconds(2f); 
                 }
+
                 EndConversation();
             }
             else if (followed == false || conversationInitiator == false)
